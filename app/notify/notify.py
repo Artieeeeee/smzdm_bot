@@ -1,7 +1,7 @@
 import json
 from typing import Dict
 from urllib.parse import urljoin
-
+import re
 import requests
 from loguru import logger
 
@@ -39,14 +39,24 @@ class NotifyBot(object):
             else:
                 logger.warning("Fail to notify Push Plus")
         except Exception as e:
-            logger.error(e)
-
+            logger.error(e)    
+  
     def server_chain(self):
         if not self.kwargs.get("SC_KEY", None):
             logger.warning("⚠️ SC_KEY not set, skip ServerChain notification")
             return
         SC_KEY = self.kwargs.get("SC_KEY")
-        url = f"https://sctapi.ftqq.com/{SC_KEY}.send"
+        match = re.search(r"^sctp(\d+)t", SC_KEY, re.IGNORECASE)
+        if match:
+        # group(1) 拿到的就是正则中 (\d+) 匹配到的纯数字部分
+        uid = match.group(1) 
+         else:
+        logger.warning(f"⚠️ SC_KEY 格式不包含 uid: {SC_KEY}，将使用默认域名")
+        # 如果你希望提取失败时依然有个默认后路，可以写死 'uid'，或者直接 return 终止
+        uid = "uid" 
+        # return 
+        
+        url = f"https://{uid}.push.ft07.com/send/{SC_KEY}.send"
         data = {"text": self.title, "desp": self.content}
         try:
             resp = requests.post(url, data=data)
