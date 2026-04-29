@@ -49,9 +49,9 @@ class NotifyBot(object):
         match = re.search(r"^sctp(\d+)t", SC_KEY, re.IGNORECASE)
         if match:
         # group(1) 拿到的就是正则中 (\d+) 匹配到的纯数字部分
-        uid = match.group(1) 
+            uid = match.group(1) 
         else:
-        logger.warning(f"⚠️ SC_KEY 格式不包含 uid: {SC_KEY}，将使用默认域名")
+            logger.warning(f"⚠️ SC_KEY 格式不包含 uid: {SC_KEY}，将使用默认域名")
         # 如果你希望提取失败时依然有个默认后路，可以写死 'uid'，或者直接 return 终止
         uid = "uid" 
         # return 
