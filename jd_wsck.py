@@ -274,7 +274,7 @@ def getcookie_wskey(key):
         #sign = get_sign_diy(pin)
         if not sign:
         	continue
-        url = f"http://api.m.jd.com/client.action?functionId=genToken&{sign}"
+        url = f"https://api.m.jd.com/client.action?functionId=genToken&{sign}"
         headers = {
             "cookie": key,
             'user-agent': UserAgent,
