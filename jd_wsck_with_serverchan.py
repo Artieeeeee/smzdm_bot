@@ -103,19 +103,20 @@ load_send()
 
 def send_serverchan(title, content):
     """
-    通过 Server酱3 (SC3) / Server酱 发送通知
+    通过 Server酱3 (SC3) 发送通知
+    支持完整 URL 或者是 SC3 的 SendKey (通常以 sctp 开头)
     """
     sckey = os.environ.get("SC_KEY")
     if not sckey:
         printf("未配置 Server酱3 SC_KEY，无法发送通知。")
         return
     
-    # Server酱3 通常提供完整的 URL，如果用户填了完整 URL 则直接使用
+    # Server酱3 (SC3) 的专属通道解析
     if sckey.startswith("http"):
         url = sckey
     else:
-        # 兼容普通的 SendKey 格式
-        url = f"https://sctapi.ftqq.com/{sckey}.send"
+        # SC3 标准接口：利用 SendKey 动态生成专属域名
+        url = f"https://{sckey}.push.ft07.com/send/{sckey}.send"
         
     data = {
         "title": title,
@@ -123,7 +124,6 @@ def send_serverchan(title, content):
     }
     try:
         res = requests.post(url, data=data, timeout=15).json()
-        # Server酱3 的成功标识可能是 code == 0 或是其他
         if res.get("code") == 0 or res.get("data", {}).get("error") == "SUCCESS":
             printf("Server酱3 发送通知消息成功!")
         else:
