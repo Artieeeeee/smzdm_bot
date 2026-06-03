@@ -103,26 +103,33 @@ load_send()
 
 def send_serverchan(title, content):
     """
-    通过 Server酱 (ServerChan) 发送通知
+    通过 Server酱3 (SC3) / Server酱 发送通知
     """
-    sckey = os.environ.get("PUSH_KEY")
+    sckey = os.environ.get("SC_KEY")
     if not sckey:
-        printf("未配置 Server酱 PUSH_KEY，无法发送Server酱通知。")
+        printf("未配置 Server酱3 SC_KEY，无法发送通知。")
         return
     
-    url = f"https://sctapi.ftqq.com/{sckey}.send"
+    # Server酱3 通常提供完整的 URL，如果用户填了完整 URL 则直接使用
+    if sckey.startswith("http"):
+        url = sckey
+    else:
+        # 兼容普通的 SendKey 格式
+        url = f"https://sctapi.ftqq.com/{sckey}.send"
+        
     data = {
         "title": title,
         "desp": content.replace("\n", "\n\n") # Markdown 换行
     }
     try:
         res = requests.post(url, data=data, timeout=15).json()
-        if res.get("code") == 0:
-            printf("Server酱 发送通知消息成功!")
+        # Server酱3 的成功标识可能是 code == 0 或是其他
+        if res.get("code") == 0 or res.get("data", {}).get("error") == "SUCCESS":
+            printf("Server酱3 发送通知消息成功!")
         else:
-            printf(f"Server酱 发送通知失败: {res.get('message')}")
+            printf(f"Server酱3 发送通知失败/返回异常: {res}")
     except Exception as e:
-        printf(f"Server酱 请求异常: {e}")
+        printf(f"Server酱3 请求异常: {e}")
 
 def send_notification(title, content,summary):
     # Add your own WxPusher API key here
@@ -486,7 +493,7 @@ def get_latest_file(files):
 def main():
     printf("版本: 20230602 + ServerChan版")
     printf("说明: 如果用Wxpusher通知需配置WP_APP_TOKEN_ONE和WP_APP_MAIN_UID")
-    printf("说明: 如果用Server酱通知需配置PUSH_KEY")
+    printf("说明: 如果用Server酱3通知需配置SC_KEY (支持直接填入完整的URL或SendKey)")
     printf("隧道型代理池接口:export WSKEY_PROXY_TUNNRL='http://127.0.0.1:123456'")
     printf("拉取型代理API接口(数据格式:txt;提取数量:每次一个):export DY_PROXY='http://xxx.com/apiUrl'")
     printf("没有代理可以自行注册，比如携趣，巨量，每日免费1000IP，完全够用")
@@ -514,9 +521,9 @@ def main():
         printf(f"无法判断使用环境，退出脚本!")
         return
     
-    # 检查 Server酱 环境变量
-    if os.environ.get("PUSH_KEY"):
-        printf('检测到已配置Server酱 PUSH_KEY,将使用Server酱发送通知')
+    # 检查 Server酱3 环境变量
+    if os.environ.get("SC_KEY"):
+        printf('检测到已配置Server酱3 SC_KEY,将使用Server酱3发送通知')
         isserverchan=True
 
     # 检查 Wxpusher 环境变量
